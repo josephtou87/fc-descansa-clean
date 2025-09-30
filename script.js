@@ -1422,33 +1422,24 @@ function handleLogin(e) {
         return;
     }
     
-    // Mock login - for demo purposes
-    const mockUser = {
-        id: 1,
-        fullName: 'Usuario Demo',
-        nickname: 'Demo',
-        jerseyNumber: 10,
-        position: 'Delantero',
-        email: email,
-        whatsapp: '+1234567890',
-        photo: null,
-        registeredAt: new Date().toISOString(),
-        stats: {
-            goals: 0,
-            assists: 0,
-            matches: 0
-        }
-    };
+    // Load registered users from localStorage
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     
-    // Simulate API call
-    setTimeout(() => {
-        currentUser = mockUser;
+    // Find user by email and password
+    const user = registeredUsers.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        // User found - login successful
+        currentUser = user;
         isLoggedIn = true;
-        localStorage.setItem('currentUser', JSON.stringify(mockUser));
+        localStorage.setItem('currentUser', JSON.stringify(user));
         updateLoginUI();
         showSection('home');
-        alert('¡Bienvenido ' + mockUser.fullName + '!');
-    }, 500);
+        alert('¡Bienvenido ' + user.fullName + '!');
+    } else {
+        // User not found
+        alert('Credenciales incorrectas. Por favor verifica tu email y contraseña.');
+    }
 }
 
 // Register handling
@@ -1469,8 +1460,25 @@ function handleRegister(e) {
         return;
     }
     
-    // Mock registration - for demo purposes
-    const mockUser = {
+    // Load existing users
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    
+    // Check if email already exists
+    const existingUser = registeredUsers.find(u => u.email === email);
+    if (existingUser) {
+        alert('Este email ya está registrado. Por favor usa otro email o inicia sesión.');
+        return;
+    }
+    
+    // Check if jersey number already exists
+    const existingJersey = registeredUsers.find(u => u.jerseyNumber === jerseyNumber);
+    if (existingJersey) {
+        alert('Este número de camiseta ya está en uso. Por favor elige otro número.');
+        return;
+    }
+    
+    // Create new user
+    const newUser = {
         id: Date.now(),
         fullName: fullName,
         nickname: nickname || 'Sin apodo',
@@ -1488,16 +1496,20 @@ function handleRegister(e) {
         }
     };
     
-    // Simulate API call
-    setTimeout(() => {
-        players.push(mockUser);
-        currentUser = mockUser;
-        isLoggedIn = true;
-        localStorage.setItem('currentUser', JSON.stringify(mockUser));
-        updateLoginUI();
-        showSection('home');
-        alert('¡Registro exitoso! Bienvenido ' + mockUser.fullName + '!');
-    }, 500);
+    // Save user to localStorage
+    registeredUsers.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    
+    // Also add to players array for display
+    players.push(newUser);
+    
+    // Login the new user
+    currentUser = newUser;
+    isLoggedIn = true;
+    localStorage.setItem('currentUser', JSON.stringify(newUser));
+    updateLoginUI();
+    showSection('home');
+    alert('¡Registro exitoso! Bienvenido ' + newUser.fullName + '!');
 }
 
 function completeRegistration(playerData) {
@@ -1930,13 +1942,20 @@ function savePlayers() {
 }
 
 function loadPlayers() {
-    if (db) {
-        players = db.getAllPlayers();
-    } else {
-        const saved = localStorage.getItem('fcDescansaPlayers');
-        if (saved) {
-            players = JSON.parse(saved);
-        }
+    // Load registered users from localStorage
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    players = registeredUsers;
+    
+    // Also load from old storage for backward compatibility
+    const saved = localStorage.getItem('fcDescansaPlayers');
+    if (saved) {
+        const oldPlayers = JSON.parse(saved);
+        // Merge old players with registered users (avoid duplicates)
+        oldPlayers.forEach(oldPlayer => {
+            if (!players.find(p => p.id === oldPlayer.id)) {
+                players.push(oldPlayer);
+            }
+        });
     }
 }
 
@@ -2558,11 +2577,29 @@ function formatTime(date) {
 }
 
 // Export functions for external use
+// Debug function to show registered users
+function showRegisteredUsers() {
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    console.log('Usuarios registrados:', registeredUsers);
+    console.log('Total usuarios:', registeredUsers.length);
+    return registeredUsers;
+}
+
 window.FCDescansa = {
     login: handleLogin,
     register: handleRegister,
     logout: logout,
     showSection: showSection,
     sendMatchNotifications: sendMatchNotifications,
-    sendReminderNotifications: sendReminderNotifications
+    sendReminderNotifications: sendReminderNotifications,
+    showRegisteredUsers: showRegisteredUsers,
+    clearUsers: () => {
+        localStorage.removeItem('registeredUsers');
+        localStorage.removeItem('currentUser');
+        players = [];
+        currentUser = null;
+        isLoggedIn = false;
+        updateLoginUI();
+        alert('Usuarios eliminados. Recarga la página.');
+    }
 };

@@ -1,6 +1,7 @@
 {
   "version": 2,
   "name": "fc-descansa-website",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/(.*)",

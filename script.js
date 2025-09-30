@@ -1488,39 +1488,68 @@ function handleRegister(e) {
         return;
     }
     
-    // Create new user
-    const newUser = {
-        id: Date.now(),
-        fullName: fullName,
-        nickname: nickname || 'Sin apodo',
-        jerseyNumber: jerseyNumber || 99,
-        position: position || 'Jugador',
-        email: email,
-        whatsapp: whatsapp || '+1234567890',
-        password: password,
-        photo: null,
-        registeredAt: new Date().toISOString(),
-        stats: {
-            goals: 0,
-            assists: 0,
-            matches: 0
-        }
-    };
+    // Handle photo upload
+    const photoInput = document.getElementById('photo');
+    const cameraPreview = document.getElementById('cameraPreview');
+    let photoData = null;
     
-    // Save user to localStorage
-    registeredUsers.push(newUser);
-    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    if (photoInput.files.length > 0) {
+        // Photo uploaded from file input
+        const file = photoInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            photoData = e.target.result;
+            completeRegistration();
+        };
+        reader.readAsDataURL(file);
+    } else if (cameraPreview.src && cameraPreview.src !== '') {
+        // Photo taken with camera
+        photoData = cameraPreview.src;
+        completeRegistration();
+    } else {
+        // No photo provided
+        completeRegistration();
+    }
     
-    // Also add to players array for display
-    players.push(newUser);
-    
-    // Login the new user
-    currentUser = newUser;
-    isLoggedIn = true;
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    updateLoginUI();
-    showSection('home');
-    alert('¡Registro exitoso! Bienvenido ' + newUser.fullName + '!');
+    function completeRegistration() {
+        // Create new user
+        const newUser = {
+            id: Date.now(),
+            fullName: fullName,
+            nickname: nickname || 'Sin apodo',
+            jerseyNumber: jerseyNumber || 99,
+            position: position || 'Jugador',
+            email: email,
+            whatsapp: whatsapp || '+1234567890',
+            password: password,
+            photo: photoData,
+            registeredAt: new Date().toISOString(),
+            stats: {
+                goals: 0,
+                assists: 0,
+                matches: 0
+            }
+        };
+        
+        // Save user to localStorage
+        registeredUsers.push(newUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        
+        // Also add to players array for display
+        players.push(newUser);
+        
+        // Login the new user
+        currentUser = newUser;
+        isLoggedIn = true;
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+        updateLoginUI();
+        showSection('home');
+        alert('¡Registro exitoso! Bienvenido ' + newUser.fullName + '!');
+        
+        // Clear form
+        e.target.reset();
+        cameraPreview.src = '';
+    }
 }
 
 function completeRegistration(playerData) {
@@ -2602,6 +2631,17 @@ function showRegisteredUsers() {
     const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     console.log('Usuarios registrados:', registeredUsers);
     console.log('Total usuarios:', registeredUsers.length);
+    
+    // Show photo info for each user
+    registeredUsers.forEach((user, index) => {
+        console.log(`Usuario ${index + 1}:`, {
+            name: user.fullName,
+            email: user.email,
+            hasPhoto: !!user.photo,
+            photoLength: user.photo ? user.photo.length : 0
+        });
+    });
+    
     return registeredUsers;
 }
 
@@ -2613,6 +2653,37 @@ window.FCDescansa = {
     sendMatchNotifications: sendMatchNotifications,
     sendReminderNotifications: sendReminderNotifications,
     showRegisteredUsers: showRegisteredUsers,
+    testCurrentUserPhoto: () => {
+        if (currentUser) {
+            console.log('Usuario actual:', {
+                name: currentUser.fullName,
+                email: currentUser.email,
+                hasPhoto: !!currentUser.photo,
+                photoLength: currentUser.photo ? currentUser.photo.length : 0,
+                photoPreview: currentUser.photo ? currentUser.photo.substring(0, 50) + '...' : 'No photo'
+            });
+            
+            if (currentUser.photo) {
+                // Create a test image to verify photo
+                const testImg = document.createElement('img');
+                testImg.src = currentUser.photo;
+                testImg.style.width = '100px';
+                testImg.style.height = '100px';
+                testImg.style.border = '2px solid red';
+                testImg.style.position = 'fixed';
+                testImg.style.top = '10px';
+                testImg.style.right = '10px';
+                testImg.style.zIndex = '9999';
+                document.body.appendChild(testImg);
+                
+                setTimeout(() => {
+                    document.body.removeChild(testImg);
+                }, 3000);
+            }
+        } else {
+            console.log('No hay usuario logueado');
+        }
+    },
     clearUsers: () => {
         localStorage.removeItem('registeredUsers');
         localStorage.removeItem('currentUser');

@@ -5,6 +5,76 @@ let nextMatch = null;
 let isLoggedIn = false;
 let db = null;
 
+// Storage utility functions
+const Storage = {
+    // Check if localStorage is available
+    isAvailable: () => {
+        try {
+            const test = '__localStorage_test__';
+            localStorage.setItem(test, test);
+            localStorage.removeItem(test);
+            return true;
+        } catch (e) {
+            console.warn('localStorage no disponible, usando fallback');
+            return false;
+        }
+    },
+    
+    // Set item with fallback
+    setItem: (key, value) => {
+        try {
+            if (Storage.isAvailable()) {
+                localStorage.setItem(key, JSON.stringify(value));
+                console.log(`✅ Datos guardados en localStorage: ${key}`);
+            } else {
+                // Fallback to sessionStorage
+                sessionStorage.setItem(key, JSON.stringify(value));
+                console.log(`⚠️ Datos guardados en sessionStorage: ${key}`);
+            }
+        } catch (error) {
+            console.error('❌ Error guardando datos:', error);
+        }
+    },
+    
+    // Get item with fallback
+    getItem: (key, defaultValue = null) => {
+        try {
+            let data = null;
+            if (Storage.isAvailable()) {
+                data = localStorage.getItem(key);
+            } else {
+                data = sessionStorage.getItem(key);
+            }
+            
+            if (data) {
+                const parsed = JSON.parse(data);
+                console.log(`✅ Datos cargados: ${key}`, parsed);
+                return parsed;
+            } else {
+                console.log(`ℹ️ No hay datos para: ${key}`);
+                return defaultValue;
+            }
+        } catch (error) {
+            console.error('❌ Error cargando datos:', error);
+            return defaultValue;
+        }
+    },
+    
+    // Remove item
+    removeItem: (key) => {
+        try {
+            if (Storage.isAvailable()) {
+                localStorage.removeItem(key);
+            } else {
+                sessionStorage.removeItem(key);
+            }
+            console.log(`🗑️ Datos eliminados: ${key}`);
+        } catch (error) {
+            console.error('❌ Error eliminando datos:', error);
+        }
+    }
+};
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
@@ -1199,16 +1269,16 @@ function initializeApp() {
         applySavedPreferences();
         
         // Check if user is logged in
-        const savedUser = localStorage.getItem('currentUser');
+        const savedUser = Storage.getItem('currentUser');
         if (savedUser) {
             try {
-                currentUser = JSON.parse(savedUser);
+                currentUser = savedUser;
                 isLoggedIn = true;
                 updateLoginUI();
                 console.log('✅ Usuario logueado:', currentUser.fullName);
             } catch (error) {
                 console.error('❌ Error al cargar usuario:', error);
-                localStorage.removeItem('currentUser');
+                Storage.removeItem('currentUser');
             }
         } else {
             console.log('ℹ️ No hay usuario logueado');
@@ -1445,8 +1515,8 @@ function handleLogin(e) {
         return;
     }
     
-    // Load registered users from localStorage
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    // Load registered users using Storage utility
+    const registeredUsers = Storage.getItem('registeredUsers', []);
     
     // Find user by email and password
     const user = registeredUsers.find(u => u.email === email && u.password === password);
@@ -1543,9 +1613,9 @@ function handleRegister(e) {
             }
         };
         
-        // Save user to localStorage
+        // Save user using Storage utility
         registeredUsers.push(newUser);
-        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        Storage.setItem('registeredUsers', registeredUsers);
         
         // Also add to players array for display
         players.push(newUser);
@@ -1553,7 +1623,7 @@ function handleRegister(e) {
         // Login the new user
         currentUser = newUser;
         isLoggedIn = true;
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
+        Storage.setItem('currentUser', newUser);
         updateLoginUI();
         showSection('home');
         alert('¡Registro exitoso! Bienvenido ' + newUser.fullName + '!');
@@ -2003,16 +2073,15 @@ function savePlayers() {
 }
 
 function loadPlayers() {
-    // Load registered users from localStorage
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    // Load registered users using Storage utility
+    const registeredUsers = Storage.getItem('registeredUsers', []);
     players = registeredUsers;
     
     // Also load from old storage for backward compatibility
-    const saved = localStorage.getItem('fcDescansaPlayers');
-    if (saved) {
-        const oldPlayers = JSON.parse(saved);
+    const saved = Storage.getItem('fcDescansaPlayers', []);
+    if (saved && saved.length > 0) {
         // Merge old players with registered users (avoid duplicates)
-        oldPlayers.forEach(oldPlayer => {
+        saved.forEach(oldPlayer => {
             if (!players.find(p => p.id === oldPlayer.id)) {
                 players.push(oldPlayer);
             }
@@ -2640,14 +2709,15 @@ function formatTime(date) {
 // Export functions for external use
 // Debug function to show registered users
 function showRegisteredUsers() {
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const currentUserData = localStorage.getItem('currentUser');
-    const oldPlayers = JSON.parse(localStorage.getItem('fcDescansaPlayers') || '[]');
+    const registeredUsers = Storage.getItem('registeredUsers', []);
+    const currentUserData = Storage.getItem('currentUser');
+    const oldPlayers = Storage.getItem('fcDescansaPlayers', []);
     
     console.log('=== DIAGNÓSTICO DE DATOS ===');
+    console.log('localStorage disponible:', Storage.isAvailable());
     console.log('Usuarios registrados (registeredUsers):', registeredUsers);
     console.log('Total usuarios registrados:', registeredUsers.length);
-    console.log('Usuario actual (currentUser):', currentUserData ? JSON.parse(currentUserData) : 'No hay usuario');
+    console.log('Usuario actual (currentUser):', currentUserData);
     console.log('Jugadores antiguos (fcDescansaPlayers):', oldPlayers);
     console.log('Total jugadores antiguos:', oldPlayers.length);
     console.log('Array players actual:', players);
@@ -2665,7 +2735,7 @@ function showRegisteredUsers() {
     
     return {
         registeredUsers,
-        currentUser: currentUserData ? JSON.parse(currentUserData) : null,
+        currentUser: currentUserData,
         oldPlayers,
         currentPlayers: players
     };
@@ -2685,9 +2755,9 @@ window.FCDescansa = {
         loadNextMatch();
         
         // Check if user is logged in
-        const savedUser = localStorage.getItem('currentUser');
+        const savedUser = Storage.getItem('currentUser');
         if (savedUser) {
-            currentUser = JSON.parse(savedUser);
+            currentUser = savedUser;
             isLoggedIn = true;
             updateLoginUI();
             console.log('Usuario logueado:', currentUser.fullName);
@@ -2729,9 +2799,9 @@ window.FCDescansa = {
         }
     },
     clearUsers: () => {
-        localStorage.removeItem('registeredUsers');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('fcDescansaPlayers');
+        Storage.removeItem('registeredUsers');
+        Storage.removeItem('currentUser');
+        Storage.removeItem('fcDescansaPlayers');
         players = [];
         currentUser = null;
         isLoggedIn = false;

@@ -4733,3 +4733,113 @@ main {
         max-height: 60vh;
     }
 }
+
+/* User Info Styles */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.user-info:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-avatar-initials {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.logout-btn {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 0, 0, 0.3);
+    color: #ff5252;
+    transform: scale(1.05);
+}
+
+/* Mobile adjustments for user info */
+@media (max-width: 768px) {
+    .user-info {
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.5rem;
+        min-width: 80px;
+    }
+    
+    .user-name {
+        font-size: 0.7rem;
+        max-width: 80px;
+    }
+    
+    .logout-btn {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .user-avatar,
+    .user-avatar-initials {
+        width: 25px;
+        height: 25px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-info {
+        min-width: 60px;
+    }
+    
+    .user-name {
+        font-size: 0.6rem;
+        max-width: 60px;
+    }
+    
+    .logout-btn {
+        font-size: 0.5rem;
+        padding: 0.15rem 0.3rem;
+    }
+}

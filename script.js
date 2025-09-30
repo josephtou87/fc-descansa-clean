@@ -1349,6 +1349,17 @@ function showSection(sectionId) {
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
+        
+        // Scroll to top of the page
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+        
+        // Also scroll the target section to top
+        setTimeout(() => {
+            targetSection.scrollTop = 0;
+        }, 100);
     }
 }
 
@@ -1649,16 +1660,25 @@ function dataURLtoFile(dataurl, filename) {
 function updateLoginUI() {
     const loginLink = document.getElementById('loginLink');
     if (isLoggedIn && currentUser) {
+        // Create user avatar with initials if no photo
+        let avatarHtml = '';
+        if (currentUser.photo) {
+            avatarHtml = `<img src="${currentUser.photo}" alt="${currentUser.fullName}" class="user-avatar">`;
+        } else {
+            // Create avatar with initials
+            const initials = currentUser.fullName.split(' ').map(name => name[0]).join('').toUpperCase();
+            avatarHtml = `<div class="user-avatar-initials">${initials}</div>`;
+        }
+        
         loginLink.innerHTML = `
             <div class="user-info">
-                <img src="${currentUser.photo || 'https://via.placeholder.com/30x30/1e40af/ffffff?text=U'}" 
-                     alt="${currentUser.fullName}" class="user-avatar">
-                <span>${currentUser.fullName}</span>
+                ${avatarHtml}
+                <span class="user-name">${currentUser.fullName}</span>
                 <button onclick="logout()" class="logout-btn">Salir</button>
             </div>
         `;
     } else {
-        loginLink.textContent = 'Iniciar Sesión';
+        loginLink.innerHTML = '<span>Iniciar Sesión</span>';
     }
 }
 

@@ -1,14 +1,17 @@
 {
   "name": "fc-descansa-website",
   "version": "1.0.0",
-  "description": "Sitio web oficial del equipo de fútbol FC DESCANSA",
+  "description": "Sitio web oficial del equipo de fútbol FC DESCANSA con backend completo",
   "main": "index.html",
   "scripts": {
     "start": "npx serve -s . -l 3000",
     "build": "echo 'Static site - no build needed'",
     "dev": "npx serve -s . -l 3000",
     "preview": "npx serve -s . -l 4173",
-    "vercel-build": "echo 'Static site - no build needed'"
+    "vercel-build": "echo 'Static site - no build needed'",
+    "backend": "cd backend && npm start",
+    "backend-dev": "cd backend && npm run dev",
+    "setup-db": "cd backend && node setup-database.js"
   },
   "keywords": [
     "futbol",
@@ -16,15 +19,19 @@
     "equipo",
     "fc-descansa",
     "deportes",
-    "website"
+    "website",
+    "backend",
+    "notifications",
+    "whatsapp",
+    "email"
   ],
   "author": "FC DESCANSA",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tu-usuario/fc-descansa-website.git"
+    "url": "https://github.com/josephtou87/fc-descansa-clean.git"
   },
-  "homepage": "https://fc-descansa-website.vercel.app",
+  "homepage": "https://fc-descansa-clean.vercel.app",
   "devDependencies": {
     "serve": "^14.2.1"
   },

@@ -1179,6 +1179,8 @@ let currentTheme = 'dark';
 // Initialize application
 function initializeApp() {
     try {
+        console.log('🚀 Inicializando aplicación...');
+        
         // Load saved data
         loadPlayers();
         loadNextMatch();
@@ -1199,9 +1201,17 @@ function initializeApp() {
         // Check if user is logged in
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            isLoggedIn = true;
-            updateLoginUI();
+            try {
+                currentUser = JSON.parse(savedUser);
+                isLoggedIn = true;
+                updateLoginUI();
+                console.log('✅ Usuario logueado:', currentUser.fullName);
+            } catch (error) {
+                console.error('❌ Error al cargar usuario:', error);
+                localStorage.removeItem('currentUser');
+            }
+        } else {
+            console.log('ℹ️ No hay usuario logueado');
         }
         
         // Initialize sample data if none exists
@@ -1220,6 +1230,8 @@ function initializeApp() {
         loadStartingXI();
         
         console.log('✅ App initialized successfully');
+        console.log('📊 Total jugadores cargados:', players.length);
+        console.log('👤 Usuario actual:', currentUser ? currentUser.fullName : 'Ninguno');
     } catch (error) {
         console.error('❌ Error initializing app:', error);
         // Continue anyway to prevent blocking
@@ -2629,8 +2641,17 @@ function formatTime(date) {
 // Debug function to show registered users
 function showRegisteredUsers() {
     const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    console.log('Usuarios registrados:', registeredUsers);
-    console.log('Total usuarios:', registeredUsers.length);
+    const currentUserData = localStorage.getItem('currentUser');
+    const oldPlayers = JSON.parse(localStorage.getItem('fcDescansaPlayers') || '[]');
+    
+    console.log('=== DIAGNÓSTICO DE DATOS ===');
+    console.log('Usuarios registrados (registeredUsers):', registeredUsers);
+    console.log('Total usuarios registrados:', registeredUsers.length);
+    console.log('Usuario actual (currentUser):', currentUserData ? JSON.parse(currentUserData) : 'No hay usuario');
+    console.log('Jugadores antiguos (fcDescansaPlayers):', oldPlayers);
+    console.log('Total jugadores antiguos:', oldPlayers.length);
+    console.log('Array players actual:', players);
+    console.log('Total en array players:', players.length);
     
     // Show photo info for each user
     registeredUsers.forEach((user, index) => {
@@ -2642,7 +2663,12 @@ function showRegisteredUsers() {
         });
     });
     
-    return registeredUsers;
+    return {
+        registeredUsers,
+        currentUser: currentUserData ? JSON.parse(currentUserData) : null,
+        oldPlayers,
+        currentPlayers: players
+    };
 }
 
 window.FCDescansa = {
@@ -2653,6 +2679,24 @@ window.FCDescansa = {
     sendMatchNotifications: sendMatchNotifications,
     sendReminderNotifications: sendReminderNotifications,
     showRegisteredUsers: showRegisteredUsers,
+    reloadData: () => {
+        console.log('Recargando datos...');
+        loadPlayers();
+        loadNextMatch();
+        
+        // Check if user is logged in
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            isLoggedIn = true;
+            updateLoginUI();
+            console.log('Usuario logueado:', currentUser.fullName);
+        } else {
+            console.log('No hay usuario logueado');
+        }
+        
+        console.log('Datos recargados. Total jugadores:', players.length);
+    },
     testCurrentUserPhoto: () => {
         if (currentUser) {
             console.log('Usuario actual:', {
@@ -2687,6 +2731,7 @@ window.FCDescansa = {
     clearUsers: () => {
         localStorage.removeItem('registeredUsers');
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('fcDescansaPlayers');
         players = [];
         currentUser = null;
         isLoggedIn = false;

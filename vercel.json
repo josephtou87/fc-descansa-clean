@@ -1,6 +1,12 @@
 {
   "version": 2,
   "name": "fc-descansa-website",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "env": {
     "NODE_ENV": "production"
   }

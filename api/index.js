@@ -1,84 +1,67 @@
+// API principal para Vercel - Maneja todas las rutas del backend
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+
+// Importar rutas del backend
+const authRoutes = require('../backend/routes/auth');
+const matchesRoutes = require('../backend/routes/matches');
+const playersRoutes = require('../backend/routes/players');
+const notificationsRoutes = require('../backend/routes/notifications');
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
+// Rutas de la API
+app.use('/auth', authRoutes);
+app.use('/matches', matchesRoutes);
+app.use('/players', playersRoutes);
+app.use('/notifications', notificationsRoutes);
+
+// Ruta de salud
 app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        message: 'FC Descansa API is running',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
-
-// Test endpoint
-app.get('/test', (req, res) => {
-    res.json({
-        message: 'API is working!',
+    res.json({ 
+        status: 'OK', 
+        message: 'FC Descansa API funcionando correctamente',
         timestamp: new Date().toISOString()
     });
 });
 
-// Mock auth endpoints for testing
-app.post('/auth/register', (req, res) => {
+// Ruta raíz de la API
+app.get('/', (req, res) => {
     res.json({
-        message: 'Mock registration endpoint',
-        status: 'success',
-        timestamp: new Date().toISOString()
+        message: 'FC Descansa API',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth',
+            matches: '/api/matches',
+            players: '/api/players',
+            notifications: '/api/notifications',
+            health: '/api/health'
+        }
     });
 });
 
-app.post('/auth/login', (req, res) => {
-    res.json({
-        message: 'Mock login endpoint',
-        status: 'success',
-        token: 'mock-jwt-token',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Mock players endpoint
-app.get('/players', (req, res) => {
-    res.json({
-        players: [],
-        message: 'Mock players endpoint',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Mock matches endpoint
-app.get('/matches', (req, res) => {
-    res.json({
-        matches: [],
-        message: 'Mock matches endpoint',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Mock notifications endpoint
-app.post('/notifications/test', (req, res) => {
-    res.json({
-        message: 'Mock notification test endpoint',
-        status: 'success',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Error handling middleware
+// Manejo de errores
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        error: 'Something went wrong!',
-        message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+    console.error('Error en API:', err);
+    res.status(500).json({ 
+        error: 'Error interno del servidor',
+        message: err.message 
     });
 });
 
-// Export for Vercel
+// Manejo de rutas no encontradas
+app.use('*', (req, res) => {
+    res.status(404).json({ 
+        error: 'Ruta no encontrada',
+        path: req.originalUrl 
+    });
+});
+
+// Exportar para Vercel
 module.exports = app;

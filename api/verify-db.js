@@ -8,7 +8,7 @@ const pool = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // Solo permitir GET requests
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });

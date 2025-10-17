@@ -12,13 +12,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "TWILIO_ACCOUNT_SID": "@twilio_account_sid",
-    "TWILIO_AUTH_TOKEN": "@twilio_auth_token",
-    "TWILIO_WHATSAPP_NUMBER": "@twilio_whatsapp_number",
-    "SENDGRID_API_KEY": "@sendgrid_api_key",
-    "FROM_EMAIL": "@from_email",
-    "FROM_NAME": "@from_name"
+    "NODE_ENV": "production"
   },
   "functions": {
     "backend/server.js": {

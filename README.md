@@ -47,11 +47,17 @@ Sitio web completo para el equipo de fútbol FC DESCANSA que incluye todas las f
 - Captura de fotos con cámara web
 - Validación de datos en tiempo real
 
-### 💾 Base de Datos Local
-- Almacenamiento en localStorage del navegador
-- Simulación de archivos TXT para persistencia
-- Exportación de datos a archivos de texto
-- Sistema de respaldo automático
+### 📱 Notificaciones (Producción)
+- **WhatsApp**: Integración con Twilio para notificaciones automáticas
+- **Email**: Integración con SendGrid para notificaciones por correo
+- **Configuración**: Variables de entorno para Vercel
+- **Pruebas**: Endpoints de testing para verificar funcionamiento
+
+### 💾 Base de Datos
+- **Producción**: PostgreSQL en Railway (500MB gratuitos)
+- **Desarrollo**: Base de datos local o Railway
+- **Respaldo**: localStorage del navegador como fallback
+- **Exportación**: Datos a archivos de texto
 
 ### 📱 Notificaciones
 - Notificaciones por email y WhatsApp
@@ -81,13 +87,33 @@ fc.descansa.renace/
 
 ### Requisitos
 - Navegador web moderno (Chrome, Firefox, Safari, Edge)
+- Node.js v16 o superior
+- Cuenta de GitHub (para Railway)
 - JavaScript habilitado
-- Cámara web (opcional, para captura de fotos)
 
-### Instalación
-1. Descarga todos los archivos del proyecto
-2. Abre `index.html` en tu navegador web
-3. La aplicación se cargará automáticamente con datos de ejemplo
+### 🚀 Instalación Rápida con Railway
+```bash
+# 1. Clonar el proyecto
+git clone [tu-repo]
+cd fc.descansa.renace
+
+# 2. Setup automático de Railway
+node setup-railway.js
+
+# 3. Configurar base de datos
+cd backend
+node setup-database.js
+
+# 4. Iniciar servidor
+npm run dev
+```
+
+### 📖 Instalación Manual
+1. **Configura Railway**: Sigue `RAILWAY_SETUP_GUIDE.md`
+2. **Instala dependencias**: `cd backend && npm install`
+3. **Configura variables**: Crea `backend/.env` con tus credenciales
+4. **Inicia servidor**: `npm run dev`
+5. **Abre la app**: `http://localhost:3000`
 
 ### Configuración de APIs (Opcional)
 Para funcionalidades completas de notificaciones y partidos en vivo:
@@ -164,6 +190,8 @@ Edita las variables CSS en `styles.css`:
 ```
 
 ### Configurar Notificaciones
+
+#### Para Desarrollo Local
 Modifica la configuración en `api.js`:
 ```javascript
 window.NotificationService.configureEmailService({
@@ -171,6 +199,27 @@ window.NotificationService.configureEmailService({
     from: 'tu-email@dominio.com'
 });
 ```
+
+#### Para Producción (Vercel)
+1. **Configura variables de entorno en Vercel Dashboard:**
+   - `TWILIO_ACCOUNT_SID`: Tu Account SID de Twilio
+   - `TWILIO_AUTH_TOKEN`: Tu Auth Token de Twilio
+   - `TWILIO_WHATSAPP_NUMBER`: Tu número de WhatsApp de Twilio
+   - `SENDGRID_API_KEY`: Tu API Key de SendGrid
+   - `FROM_EMAIL`: Email de remitente
+   - `FROM_NAME`: Nombre del remitente
+
+2. **Usa el script de configuración:**
+   ```bash
+   node setup-vercel-env.js
+   ```
+
+3. **Prueba las notificaciones:**
+   ```bash
+   node test-production-notifications.js
+   ```
+
+📚 **Documentación completa**: Ver `VERCEL_PRODUCTION_SETUP.md`
 
 ## Soporte y Mantenimiento
 

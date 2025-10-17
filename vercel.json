@@ -1,14 +1,38 @@
 {
   "version": 2,
   "name": "fc-descansa-website",
-  "outputDirectory": ".",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "TWILIO_ACCOUNT_SID": "@twilio_account_sid",
+    "TWILIO_AUTH_TOKEN": "@twilio_auth_token",
+    "TWILIO_WHATSAPP_NUMBER": "@twilio_whatsapp_number",
+    "SENDGRID_API_KEY": "@sendgrid_api_key",
+    "FROM_EMAIL": "@from_email",
+    "FROM_NAME": "@from_name"
+  },
+  "functions": {
+    "backend/server.js": {
+      "maxDuration": 30
+    }
   }
 }

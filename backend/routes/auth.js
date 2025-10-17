@@ -34,12 +34,14 @@ router.post('/register', async (req, res) => {
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
         // Insert player
+        console.log('🔄 Insertando jugador en Railway:', { fullName, jerseyNumber, position, email });
         const result = await query(
             `INSERT INTO players (full_name, nickname, jersey_number, position, email, whatsapp, password_hash) 
              VALUES ($1, $2, $3, $4, $5, $6, $7) 
              RETURNING id, full_name, nickname, jersey_number, position, email, whatsapp`,
             [fullName, nickname, jerseyNumber, position, email, whatsapp, passwordHash]
         );
+        console.log('✅ Jugador guardado exitosamente en Railway:', { id: result.rows[0].id, name: result.rows[0].full_name });
 
         const player = result.rows[0];
 
@@ -87,10 +89,12 @@ router.post('/login', async (req, res) => {
         }
 
         // Find player by email
+        console.log('🔍 Buscando jugador en Railway:', { email });
         const result = await query(
             'SELECT id, full_name, nickname, jersey_number, position, email, whatsapp, password_hash FROM players WHERE email = $1',
             [email]
         );
+        console.log('📊 Resultado de búsqueda:', { found: result.rows.length > 0, email });
 
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid credentials' });

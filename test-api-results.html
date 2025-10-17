@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API de Resultados - FC Descansa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .match-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .live-indicator {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test API de Resultados - FC Descansa</h1>
+    
+    <div class="test-container">
+        <h2>📊 Pruebas de API</h2>
+        
+        <div class="test-section">
+            <h3>1️⃣ Configuración de API</h3>
+            <div id="apiConfig"></div>
+            <button onclick="testApiConfig()">Probar Configuración</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>2️⃣ Partidos en Vivo</h3>
+            <div id="liveMatches"></div>
+            <button onclick="testLiveMatches()">Cargar Partidos en Vivo</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>3️⃣ Partidos Terminados</h3>
+            <div id="finishedMatches"></div>
+            <button onclick="testFinishedMatches()">Cargar Partidos Terminados</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>4️⃣ Champions League</h3>
+            <div id="championsLeague"></div>
+            <button onclick="testChampionsLeague()">Cargar Champions League</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>5️⃣ Liga MX</h3>
+            <div id="ligaMX"></div>
+            <button onclick="testLigaMX()">Cargar Liga MX</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>6️⃣ Prueba Completa</h3>
+            <div id="completeTest"></div>
+            <button onclick="runCompleteTest()">Ejecutar Prueba Completa</button>
+        </div>
+    </div>
+
+    <!-- Incluir el archivo api.js -->
+    <script src="api.js"></script>
+    
+    <script>
+        // Función para mostrar resultados
+        function showResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            container.appendChild(resultDiv);
+        }
+        
+        // Función para limpiar contenedor
+        function clearContainer(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        // Test 1: Configuración de API
+        function testApiConfig() {
+            clearContainer('apiConfig');
+            
+            try {
+                if (window.FootballAPI) {
+                    showResult('apiConfig', '✅ FootballAPI cargada correctamente', 'success');
+                    showResult('apiConfig', `📡 Base URL: ${window.FootballAPI.baseURL}`, 'info');
+                    showResult('apiConfig', `🔑 API Key: ${window.FootballAPI.apiKey ? 'Configurada' : 'No configurada'}`, 'info');
+                    showResult('apiConfig', `🏆 Ligas configuradas: ${Object.keys(window.FootballAPI.leagueIds).length}`, 'info');
+                } else {
+                    showResult('apiConfig', '❌ FootballAPI no encontrada', 'error');
+                }
+            } catch (error) {
+                showResult('apiConfig', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 2: Partidos en Vivo
+        async function testLiveMatches() {
+            clearContainer('liveMatches');
+            showResult('liveMatches', '⏳ Cargando partidos en vivo...', 'info');
+            
+            try {
+                const matches = await window.FootballAPI.getLiveMatches();
+                
+                if (matches && matches.length > 0) {
+                    showResult('liveMatches', `✅ ${matches.length} partidos en vivo encontrados`, 'success');
+                    
+                    matches.forEach(match => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'match-item';
+                        matchDiv.innerHTML = `
+                            <div>
+                                <strong>${match.homeTeam}</strong> vs <strong>${match.awayTeam}</strong>
+                                <br><small>${match.competition}</small>
+                            </div>
+                            <div>
+                                <span class="live-indicator">EN VIVO</span>
+                                <br><strong>${match.homeScore}-${match.awayScore}</strong>
+                                <br><small>${match.minute}'</small>
+                            </div>
+                        `;
+                        document.getElementById('liveMatches').appendChild(matchDiv);
+                    });
+                } else {
+                    showResult('liveMatches', 'ℹ️ No hay partidos en vivo en este momento', 'info');
+                }
+            } catch (error) {
+                showResult('liveMatches', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 3: Partidos Terminados
+        async function testFinishedMatches() {
+            clearContainer('finishedMatches');
+            showResult('finishedMatches', '⏳ Cargando partidos terminados...', 'info');
+            
+            try {
+                const matches = await window.FootballAPI.getFinishedMatches();
+                
+                if (matches && matches.length > 0) {
+                    showResult('finishedMatches', `✅ ${matches.length} partidos terminados encontrados`, 'success');
+                    
+                    matches.forEach(match => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'match-item';
+                        matchDiv.innerHTML = `
+                            <div>
+                                <strong>${match.homeTeam}</strong> vs <strong>${match.awayTeam}</strong>
+                                <br><small>${match.competition}</small>
+                            </div>
+                            <div>
+                                <strong>${match.homeScore}-${match.awayScore}</strong>
+                                <br><small>Finalizado</small>
+                            </div>
+                        `;
+                        document.getElementById('finishedMatches').appendChild(matchDiv);
+                    });
+                } else {
+                    showResult('finishedMatches', 'ℹ️ No hay partidos terminados disponibles', 'info');
+                }
+            } catch (error) {
+                showResult('finishedMatches', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 4: Champions League
+        async function testChampionsLeague() {
+            clearContainer('championsLeague');
+            showResult('championsLeague', '⏳ Cargando Champions League...', 'info');
+            
+            try {
+                const matches = await window.FootballAPI.getChampionsLeagueMatches();
+                
+                if (matches && matches.length > 0) {
+                    showResult('championsLeague', `✅ ${matches.length} partidos de Champions League encontrados`, 'success');
+                    
+                    matches.forEach(match => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'match-item';
+                        matchDiv.innerHTML = `
+                            <div>
+                                <strong>${match.homeTeam}</strong> vs <strong>${match.awayTeam}</strong>
+                            </div>
+                            <div>
+                                <strong>${match.homeScore || '-'}-${match.awayScore || '-'}</strong>
+                                <br><small>${match.status}</small>
+                            </div>
+                        `;
+                        document.getElementById('championsLeague').appendChild(matchDiv);
+                    });
+                } else {
+                    showResult('championsLeague', 'ℹ️ No hay partidos de Champions League disponibles', 'info');
+                }
+            } catch (error) {
+                showResult('championsLeague', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 5: Liga MX
+        async function testLigaMX() {
+            clearContainer('ligaMX');
+            showResult('ligaMX', '⏳ Cargando Liga MX...', 'info');
+            
+            try {
+                const matches = await window.FootballAPI.getLigaMXMatches();
+                
+                if (matches && matches.length > 0) {
+                    showResult('ligaMX', `✅ ${matches.length} partidos de Liga MX encontrados`, 'success');
+                    
+                    matches.forEach(match => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'match-item';
+                        matchDiv.innerHTML = `
+                            <div>
+                                <strong>${match.homeTeam}</strong> vs <strong>${match.awayTeam}</strong>
+                            </div>
+                            <div>
+                                <strong>${match.homeScore || '-'}-${match.awayScore || '-'}</strong>
+                                <br><small>${match.status}</small>
+                            </div>
+                        `;
+                        document.getElementById('ligaMX').appendChild(matchDiv);
+                    });
+                } else {
+                    showResult('ligaMX', 'ℹ️ No hay partidos de Liga MX disponibles', 'info');
+                }
+            } catch (error) {
+                showResult('ligaMX', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 6: Prueba Completa
+        async function runCompleteTest() {
+            clearContainer('completeTest');
+            showResult('completeTest', '🚀 Iniciando prueba completa...', 'info');
+            
+            try {
+                // Test configuración
+                showResult('completeTest', '1️⃣ Probando configuración...', 'info');
+                if (window.FootballAPI) {
+                    showResult('completeTest', '✅ FootballAPI cargada', 'success');
+                } else {
+                    showResult('completeTest', '❌ FootballAPI no encontrada', 'error');
+                    return;
+                }
+                
+                // Test partidos en vivo
+                showResult('completeTest', '2️⃣ Probando partidos en vivo...', 'info');
+                const liveMatches = await window.FootballAPI.getLiveMatches();
+                showResult('completeTest', `✅ Partidos en vivo: ${liveMatches.length}`, 'success');
+                
+                // Test partidos terminados
+                showResult('completeTest', '3️⃣ Probando partidos terminados...', 'info');
+                const finishedMatches = await window.FootballAPI.getFinishedMatches();
+                showResult('completeTest', `✅ Partidos terminados: ${finishedMatches.length}`, 'success');
+                
+                // Test Champions League
+                showResult('completeTest', '4️⃣ Probando Champions League...', 'info');
+                const championsMatches = await window.FootballAPI.getChampionsLeagueMatches();
+                showResult('completeTest', `✅ Champions League: ${championsMatches.length}`, 'success');
+                
+                // Test Liga MX
+                showResult('completeTest', '5️⃣ Probando Liga MX...', 'info');
+                const ligaMXMatches = await window.FootballAPI.getLigaMXMatches();
+                showResult('completeTest', `✅ Liga MX: ${ligaMXMatches.length}`, 'success');
+                
+                // Resumen final
+                const totalMatches = liveMatches.length + finishedMatches.length + championsMatches.length + ligaMXMatches.length;
+                showResult('completeTest', `🎉 Prueba completa exitosa! Total de partidos: ${totalMatches}`, 'success');
+                
+            } catch (error) {
+                showResult('completeTest', `❌ Error en prueba completa: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-ejecutar configuración al cargar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testApiConfig();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -6,8 +6,13 @@ class EmailService {
         this.fromEmail = process.env.FROM_EMAIL || 'noreply@fcdescansa.com';
         this.fromName = process.env.FROM_NAME || 'FC Descansa';
         
-        if (this.apiKey) {
+        if (this.apiKey && this.apiKey.startsWith('SG.')) {
             sgMail.setApiKey(this.apiKey);
+            this.isConfigured = true;
+            console.log('✅ SendGrid email service configured');
+        } else {
+            this.isConfigured = false;
+            console.log('ℹ️  SendGrid not configured. Email notifications disabled (optional)');
         }
     }
 

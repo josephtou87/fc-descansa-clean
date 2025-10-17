@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Admin - FC Descansa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            border-left: 5px solid #007bff;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .players-list {
+            margin: 30px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .players-header {
+            background: #343a40;
+            color: white;
+            padding: 20px;
+        }
+        
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .players-table th,
+        .players-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .players-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .players-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status {
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Panel de Administración</h1>
+            <p>FC Descansa - Monitoreo de Base de Datos en Tiempo Real</p>
+        </div>
+        
+        <div id="status" class="status loading">
+            🔄 Cargando datos de la base de datos...
+        </div>
+        
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <h3>👥 Total Jugadores</h3>
+                <div class="stat-number" id="totalPlayers">-</div>
+                <div class="stat-label">Registrados</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>✅ Jugadores Activos</h3>
+                <div class="stat-number" id="activePlayers">-</div>
+                <div class="stat-label">En plantilla</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>⚽ Partidos</h3>
+                <div class="stat-number" id="totalMatches">-</div>
+                <div class="stat-label">Programados</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🔢 Números Disponibles</h3>
+                <div class="stat-number" id="availableNumbers">-</div>
+                <div class="stat-label">Camisetas libres</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="refreshData()">🔄 Actualizar Datos</button>
+            <button class="btn btn-success" onclick="autoRefresh()">⚡ Auto-actualizar</button>
+            <button class="btn" onclick="exportData()">📊 Exportar Datos</button>
+        </div>
+        
+        <div class="players-list" id="playersList" style="display: none;">
+            <div class="players-header">
+                <h3>📋 Últimos Jugadores Registrados</h3>
+            </div>
+            <table class="players-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apodo</th>
+                        <th>Número</th>
+                        <th>Posición</th>
+                        <th>Email</th>
+                        <th>Registrado</th>
+                    </tr>
+                </thead>
+                <tbody id="playersTableBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="timestamp" id="timestamp"></div>
+    </div>
+
+    <script>
+        let autoRefreshInterval;
+        let isAutoRefreshing = false;
+        
+        // Configurar la URL base (cambiar por tu dominio de Vercel)
+        const BASE_URL = window.location.origin;
+        
+        async function loadData() {
+            try {
+                document.getElementById('status').className = 'status loading';
+                document.getElementById('status').textContent = '🔄 Cargando datos...';
+                
+                // Cargar verificación general
+                const verifyResponse = await fetch(`${BASE_URL}/api/verify-db`);
+                const verifyData = await verifyResponse.json();
+                
+                // Cargar estadísticas detalladas
+                const statsResponse = await fetch(`${BASE_URL}/api/players-stats`);
+                const statsData = await statsResponse.json();
+                
+                if (verifyData.status === 'success' && statsData.status === 'success') {
+                    // Mostrar estadísticas
+                    document.getElementById('totalPlayers').textContent = statsData.general_stats.total;
+                    document.getElementById('activePlayers').textContent = statsData.general_stats.active;
+                    document.getElementById('totalMatches').textContent = verifyData.statistics.total_matches;
+                    document.getElementById('availableNumbers').textContent = statsData.available_numbers.length;
+                    
+                    // Mostrar tabla de jugadores
+                    const tbody = document.getElementById('playersTableBody');
+                    tbody.innerHTML = '';
+                    
+                    statsData.recent_registrations.forEach(player => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td>${player.id || '-'}</td>
+                            <td>${player.name}</td>
+                            <td>${player.nickname || '-'}</td>
+                            <td>#${player.number}</td>
+                            <td>${player.position}</td>
+                            <td>${player.email}</td>
+                            <td>${new Date(player.registered_at).toLocaleString()}</td>
+                        `;
+                    });
+                    
+                    // Mostrar elementos
+                    document.getElementById('statsGrid').style.display = 'grid';
+                    document.getElementById('playersList').style.display = 'block';
+                    document.getElementById('status').className = 'status success';
+                    document.getElementById('status').textContent = '✅ Base de datos funcionando correctamente';
+                    
+                } else {
+                    throw new Error(verifyData.message || 'Error en la respuesta');
+                }
+                
+                // Actualizar timestamp
+                document.getElementById('timestamp').textContent = 
+                    `Última actualización: ${new Date().toLocaleString()}`;
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = `❌ Error: ${error.message}`;
+                document.getElementById('statsGrid').style.display = 'none';
+                document.getElementById('playersList').style.display = 'none';
+            }
+        }
+        
+        function refreshData() {
+            loadData();
+        }
+        
+        function autoRefresh() {
+            if (isAutoRefreshing) {
+                clearInterval(autoRefreshInterval);
+                isAutoRefreshing = false;
+                document.querySelector('.btn-success').textContent = '⚡ Auto-actualizar';
+            } else {
+                autoRefreshInterval = setInterval(loadData, 5000); // Cada 5 segundos
+                isAutoRefreshing = true;
+                document.querySelector('.btn-success').textContent = '⏹️ Detener auto-actualizar';
+            }
+        }
+        
+        function exportData() {
+            // Implementar exportación si es necesario
+            alert('Función de exportación - Por implementar');
+        }
+        
+        // Cargar datos al iniciar
+        loadData();
+    </script>
+</body>
+</html>
+
+
+
+
+

@@ -6,8 +6,14 @@ class WhatsAppService {
         this.authToken = process.env.TWILIO_AUTH_TOKEN;
         this.whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
         
-        if (this.accountSid && this.authToken) {
+        if (this.accountSid && this.authToken && this.accountSid.startsWith('AC')) {
             this.client = twilio(this.accountSid, this.authToken);
+            this.isConfigured = true;
+            console.log('✅ Twilio WhatsApp service configured');
+        } else {
+            this.client = null;
+            this.isConfigured = false;
+            console.log('ℹ️  Twilio not configured. WhatsApp notifications disabled (optional)');
         }
     }
 

@@ -1,6 +1,9 @@
 {
   "version": 2,
   "name": "fc-descansa-website",
+  "outputDirectory": ".",
+  "installCommand": "npm ci --only=production",
+  "buildCommand": "echo 'Static site - no build needed'",
   "routes": [
     {
       "src": "/api/(.*)",
@@ -13,5 +16,10 @@
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 30
+    }
   }
 }
